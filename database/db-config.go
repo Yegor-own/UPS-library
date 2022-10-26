@@ -1,7 +1,6 @@
 package database
 
 import (
-	"github.com/Yegor-own/ghqllibrary/database/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -20,12 +19,19 @@ func ConnectDB(dsn string) *gorm.DB {
 }
 
 func MigrateDB(db *gorm.DB) {
-	modelsList := models.Models{
-		&models.Author{},
-		&models.Book{},
-		&models.Rent{},
-		&models.Reader{},
+	//modelsList := models.Models{
+	//	&models.Author{},
+	//	&models.Book{},
+	//	&models.Rent{},
+	//	&models.Reader{},
+	//}
+	modelsList := []interface{}{
+		&Author{},
+		&Book{},
+		&Rent{},
+		&Reader{},
 	}
+	log.Println("Migrating...")
 
 	for _, model := range modelsList {
 		//log.Println("Migrating ", model)
@@ -35,4 +41,5 @@ func MigrateDB(db *gorm.DB) {
 		}
 		//log.Println(model, " migrated successful")
 	}
+	log.Println("Migration successful")
 }

@@ -1,0 +1,72 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Book {
+  id: ID!
+  title: String!
+  maxRentalPeriod: String!
+  coverLink: String!
+  authorId: Int!
+  author: Author!
+}
+
+type Author {
+  id: ID!
+  name: String!
+  photoLink: String!
+  dob: String!
+  dod: String!
+  books: [Book!]!
+  availableBooks: Int!
+}
+
+type Reader {
+  id: ID!
+  name: String!
+  email: String!
+  leases: [Rent!]
+  lateFee: Int!
+}
+
+type Rent {
+  id: ID!
+  bookId: Int!
+  book: Book!
+  readerId: Int!
+  reader: Reader!
+  rentalTime: String!
+  rentalPeriod: String!
+  amountPenalty: Int!
+}
+
+type Query {
+  books: [Book!]!
+  authors: [Author!]!
+  rents: [Rent!]!
+  readers: [Reader!]!
+
+  book(bookId: ID!): Book!
+  author(authorId: ID!): Author!
+  rent(readerId: ID!): Rent!
+  reader(readerId: ID!): Reader!
+}
+
+# Delete
+
+type Mutation {
+  createBook (title: String!, maxRentalPeriod: String!, coverLink: String!, authorId: Int!): Book
+  createAuthor (name: String!, photoLink: String!, dob: String!, dod: String!): Author
+  createReader (name: String!, email: String!): Reader
+
+  updateBook (id: ID!, title: String, maxRentalPeriod: String, coverLink: String, authorId: Int): Book
+  updateAuthor (id: ID!, name: String, photoLink: String, dob: String, dod: String): Author
+  updateReader (id: ID!, name: String, email: String): Reader
+
+  deleteBook (id: ID!): Book
+  deleteAuthor (id: ID!): Author
+  deleteReader (id: ID!): Reader
+
+  rentBook (bookId: ID!, readerId: ID!): Rent
+  returnBook (bookId: ID!, readerId: ID!): Rent
+}
