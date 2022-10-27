@@ -7,11 +7,11 @@ import (
 
 type Reader struct {
 	gorm.Model
-	ID      uint
+	ID      uint `gorm:"primaryKey"`
 	Name    string
 	Email   string
 	Leases  []Rent
-	LateFee uint
+	LateFee int
 }
 
 func (receiver *Reader) GetById(db *gorm.DB, id int) {

@@ -3,16 +3,15 @@ package models
 import (
 	"gorm.io/gorm"
 	"log"
-	"time"
 )
 
 type Author struct {
 	gorm.Model
-	ID             uint
+	ID             uint `gorm:"primaryKey"`
 	Name           string
 	PhotoLink      string
-	DOB            time.Time
-	DOD            time.Time
+	DOB            string
+	DOD            string
 	Books          []Book
 	AvailableBooks int
 }

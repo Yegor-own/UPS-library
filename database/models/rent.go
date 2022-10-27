@@ -3,19 +3,18 @@ package models
 import (
 	"gorm.io/gorm"
 	"log"
-	"time"
 )
 
 type Rent struct {
 	gorm.Model
-	ID            uint
-	BookID        uint
+	ID            uint `gorm:"primaryKey"`
+	BookID        int
 	Book          Book `gorm:"foreignKey:BookID"`
-	ReaderID      uint
+	ReaderID      int
 	Reader        Reader `gorm:"foreignKey:ReaderID"`
-	RentalTime    time.Time
-	RentalPeriod  time.Time
-	AmountPenalty uint
+	RentalTime    string
+	RentalPeriod  string
+	AmountPenalty int
 }
 
 func (receiver *Rent) GetById(db *gorm.DB, id int) {

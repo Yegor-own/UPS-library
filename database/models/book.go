@@ -3,16 +3,15 @@ package models
 import (
 	"gorm.io/gorm"
 	"log"
-	"time"
 )
 
 type Book struct {
 	gorm.Model
-	ID              uint
+	ID              uint `gorm:"primaryKey"`
 	Title           string
-	MaxRentalPeriod time.Time
+	MaxRentalPeriod string
 	CoverLink       string
-	AuthorID        uint
+	AuthorID        int
 	Author          Author `gorm:"foreignKey:AuthorID"`
 }
 
