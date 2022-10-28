@@ -73,13 +73,12 @@ func GenerateReadersAndLeases(amount int, db *gorm.DB) []models.Reader {
 			leases = append(leases, models.Rent{
 				Book: tmp,
 			})
-			//log.Println(leases[i].Book.Title)
 		}
 
 		reader := models.Reader{
-			Name:   names.Names[rand.Intn(len(names.Names))],
-			Email:  strings.ToLower(names.Names[rand.Intn(len(names.Names))]) + "@email.com",
-			Leases: leases,
+			Name:  names.Names[rand.Intn(len(names.Names))],
+			Email: strings.ToLower(names.Names[rand.Intn(len(names.Names))]) + "@email.com",
+			Rents: leases,
 		}
 		readers = append(readers, reader)
 	}

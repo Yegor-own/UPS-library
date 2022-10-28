@@ -10,7 +10,7 @@ type Reader struct {
 	ID      uint `gorm:"primaryKey"`
 	Name    string
 	Email   string
-	Leases  []Rent
+	Rents   []Rent
 	LateFee int
 }
 

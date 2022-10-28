@@ -18,8 +18,8 @@ type Rent struct {
 }
 
 func (receiver *Rent) GetById(db *gorm.DB, id int) {
-	err := db.Model(&Rent{}).Preload("Books").Preload("Readers").Where("id = ?", id).First(&receiver).Error
+	err := db.Model(&Rent{}).Where("id = ?", id).First(&receiver).Error
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("rent > ", err)
 	}
 }
