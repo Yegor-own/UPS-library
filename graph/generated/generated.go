@@ -84,8 +84,7 @@ type ComplexityRoot struct {
 		Books   func(childComplexity int) int
 		Reader  func(childComplexity int, readerID string) int
 		Readers func(childComplexity int) int
-		Rent    func(childComplexity int, readerID string) int
-		Rents   func(childComplexity int) int
+		Rents   func(childComplexity int, readerID string) int
 	}
 
 	Reader struct {
@@ -124,11 +123,10 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Books(ctx context.Context) ([]*model.Book, error)
 	Authors(ctx context.Context) ([]*model.Author, error)
-	Rents(ctx context.Context) ([]*model.Rent, error)
+	Rents(ctx context.Context, readerID string) ([]*model.Rent, error)
 	Readers(ctx context.Context) ([]*model.Reader, error)
 	Book(ctx context.Context, bookID string) (*model.Book, error)
 	Author(ctx context.Context, authorID string) (*model.Author, error)
-	Rent(ctx context.Context, readerID string) (*model.Rent, error)
 	Reader(ctx context.Context, readerID string) (*model.Reader, error)
 }
 
@@ -427,24 +425,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Readers(childComplexity), true
 
-	case "Query.rent":
-		if e.complexity.Query.Rent == nil {
-			break
-		}
-
-		args, err := ec.field_Query_rent_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Rent(childComplexity, args["readerId"].(string)), true
-
 	case "Query.rents":
 		if e.complexity.Query.Rents == nil {
 			break
 		}
 
-		return e.complexity.Query.Rents(childComplexity), true
+		args, err := ec.field_Query_rents_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Rents(childComplexity, args["readerId"].(string)), true
 
 	case "Reader.email":
 		if e.complexity.Reader.Email == nil {
@@ -649,12 +640,11 @@ type Rent {
 type Query {
   books: [Book!]!
   authors: [Author!]!
-  rents: [Rent!]!
+  rents(readerId: ID!): [Rent!]!
   readers: [Reader!]!
 
   book(bookId: ID!): Book!
   author(authorId: ID!): Author!
-  rent(readerId: ID!): Rent!
   reader(readerId: ID!): Reader!
 }
 
@@ -1080,7 +1070,7 @@ func (ec *executionContext) field_Query_reader_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_rent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_rents_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -2601,7 +2591,7 @@ func (ec *executionContext) _Query_rents(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Rents(rctx)
+		return ec.resolvers.Query().Rents(rctx, fc.Args["readerId"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2645,6 +2635,17 @@ func (ec *executionContext) fieldContext_Query_rents(ctx context.Context, field 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Rent", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_rents_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -2839,79 +2840,6 @@ func (ec *executionContext) fieldContext_Query_author(ctx context.Context, field
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_author_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_rent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_rent(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Rent(rctx, fc.Args["readerId"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.Rent)
-	fc.Result = res
-	return ec.marshalNRent2ᚖgithubᚗcomᚋYegorᚑownᚋghqllibraryᚋgraphᚋmodelᚐRent(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_rent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Rent_id(ctx, field)
-			case "bookId":
-				return ec.fieldContext_Rent_bookId(ctx, field)
-			case "book":
-				return ec.fieldContext_Rent_book(ctx, field)
-			case "readerId":
-				return ec.fieldContext_Rent_readerId(ctx, field)
-			case "reader":
-				return ec.fieldContext_Rent_reader(ctx, field)
-			case "rentalTime":
-				return ec.fieldContext_Rent_rentalTime(ctx, field)
-			case "rentalPeriod":
-				return ec.fieldContext_Rent_rentalPeriod(ctx, field)
-			case "amountPenalty":
-				return ec.fieldContext_Rent_amountPenalty(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Rent", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_rent_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -5894,29 +5822,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "rent":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_rent(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
 		case "reader":
 			field := field
 
@@ -6628,10 +6533,6 @@ func (ec *executionContext) marshalNReader2ᚖgithubᚗcomᚋYegorᚑownᚋghqll
 		return graphql.Null
 	}
 	return ec._Reader(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNRent2githubᚗcomᚋYegorᚑownᚋghqllibraryᚋgraphᚋmodelᚐRent(ctx context.Context, sel ast.SelectionSet, v model.Rent) graphql.Marshaler {
-	return ec._Rent(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNRent2ᚕᚖgithubᚗcomᚋYegorᚑownᚋghqllibraryᚋgraphᚋmodelᚐRentᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Rent) graphql.Marshaler {

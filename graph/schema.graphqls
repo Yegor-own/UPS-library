@@ -43,12 +43,11 @@ type Rent {
 type Query {
   books: [Book!]!
   authors: [Author!]!
-  rents: [Rent!]!
+  rents(readerId: ID!): [Rent!]!
   readers: [Reader!]!
 
   book(bookId: ID!): Book!
   author(authorId: ID!): Author!
-  rent(readerId: ID!): Rent!
   reader(readerId: ID!): Reader!
 }
 
