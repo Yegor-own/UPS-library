@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"strings"
+	"time"
 )
 
 type BooksAuthorsJSON struct {
@@ -40,9 +41,9 @@ func GenerateBooksAndAuthors() []models.Author {
 
 	for name, bookslist := range author {
 		for _, title := range bookslist {
-			books = append(books, models.Book{Title: title})
+			books = append(books, models.Book{Title: title, MaxRentalPeriod: time.Until(time.Date(2022, 10, 28, 0, 0, 0, 0, time.UTC)).String()})
 		}
-		authors = append(authors, models.Author{Name: name, Books: books, AvailableBooks: len(books)})
+		authors = append(authors, models.Author{Name: name, Books: books, AvailableBooks: len(books), DOB: time.Now().Format(time.RFC822), DOD: time.Now().Format(time.RFC822)})
 		books = []models.Book{}
 	}
 	return authors
@@ -71,7 +72,10 @@ func GenerateReadersAndLeases(amount int, db *gorm.DB) []models.Reader {
 			var tmp models.Book
 			tmp.GetById(db, i+int(book.ID))
 			leases = append(leases, models.Rent{
-				Book: tmp,
+				Book:          tmp,
+				RentalTime:    time.Date(2022, 10, 31, 0, 0, 0, 0, time.UTC).Format(time.RFC822),
+				RentalPeriod:  time.Until(time.Date(2022, 10, 28, 0, 0, 0, 0, time.UTC)).String(),
+				AmountPenalty: 12,
 			})
 		}
 

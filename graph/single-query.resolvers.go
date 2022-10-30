@@ -194,7 +194,7 @@ func (r *queryResolver) Reader(ctx context.Context, readerID string) (*model.Rea
 		Name:    reader.Name,
 		Email:   reader.Email,
 		Leases:  leases,
-		LateFee: 0,
+		LateFee: reader.LateFee,
 	}
 	return &res, nil
 }

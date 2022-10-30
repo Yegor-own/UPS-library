@@ -44,6 +44,7 @@ func (r *queryResolver) Authors(ctx context.Context) ([]*model.Author, error) {
 	res := []*model.Author{}
 	for _, author := range authors {
 		books := []*model.Book{}
+		author.GetById(DBLib, int(author.ID))
 		for _, book := range author.Books {
 			books = append(books, &model.Book{
 				ID:              strconv.Itoa(int(book.ID)),
@@ -77,7 +78,7 @@ func (r *queryResolver) Rents(ctx context.Context, readerID string) ([]*model.Re
 	}
 
 	rents := []models.Rent{}
-	DBLib.Where("id = ?", readerIntID).Find(&rents)
+	DBLib.Where("reader_id = ?", readerIntID).Find(&rents)
 
 	res := []*model.Rent{}
 	for _, rent := range rents {
@@ -122,5 +123,33 @@ func (r *queryResolver) Rents(ctx context.Context, readerID string) ([]*model.Re
 
 // Readers is the resolver for the readers field.
 func (r *queryResolver) Readers(ctx context.Context) ([]*model.Reader, error) {
-	return []*model.Reader{}, nil
+
+	readers := []models.Reader{}
+	DBLib.Find(&readers)
+
+	res := []*model.Reader{}
+	for _, reader := range readers {
+		leases := []*model.Rent{}
+		for _, rent := range reader.Rents {
+			leases = append(leases, &model.Rent{
+				ID:            strconv.Itoa(int(rent.ID)),
+				BookID:        rent.BookID,
+				Book:          nil,
+				ReaderID:      rent.ReaderID,
+				Reader:        nil,
+				RentalTime:    rent.RentalTime,
+				RentalPeriod:  rent.RentalPeriod,
+				AmountPenalty: rent.AmountPenalty,
+			})
+		}
+
+		res = append(res, &model.Reader{
+			ID:      strconv.Itoa(int(reader.ID)),
+			Name:    reader.Name,
+			Email:   reader.Email,
+			Leases:  leases,
+			LateFee: reader.LateFee,
+		})
+	}
+	return res, nil
 }

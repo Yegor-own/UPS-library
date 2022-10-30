@@ -6,6 +6,7 @@ import (
 	"github.com/Yegor-own/ghqllibrary/graph/model"
 	"log"
 	"strconv"
+	"time"
 )
 
 // CreateBook is the resolver for the createBook field.
@@ -103,13 +104,22 @@ func (r *mutationResolver) RentBook(ctx context.Context, bookID string, readerID
 	if err != nil {
 		log.Println(err)
 	}
+	book := models.Book{}
+	book.GetById(DBLib, bookIntID)
 
 	rent := models.Rent{
-		BookID:   bookIntID,
-		ReaderID: readerIntID,
+		BookID:        bookIntID,
+		ReaderID:      readerIntID,
+		RentalTime:    time.Now().Format(time.RFC822),
+		RentalPeriod:  book.MaxRentalPeriod,
+		AmountPenalty: 13,
 	}
+
 	DBLib.Create(&rent)
 	rent.Book.GetById(DBLib, rent.BookID)
+	rent.RentalPeriod = rent.Book.MaxRentalPeriod
+	DBLib.Save(&rent)
+
 	rent.Reader.GetById(DBLib, rent.ReaderID)
 	rent.Book.Author.GetById(DBLib, rent.Book.AuthorID)
 
@@ -140,9 +150,9 @@ func (r *mutationResolver) RentBook(ctx context.Context, bookID string, readerID
 			Leases:  nil,
 			LateFee: rent.Reader.LateFee,
 		},
-		RentalTime:    rent.RentalTime,
-		RentalPeriod:  rent.RentalPeriod,
-		AmountPenalty: rent.AmountPenalty,
+		RentalTime:    time.Now().Format(time.RFC822),
+		RentalPeriod:  rent.Book.MaxRentalPeriod,
+		AmountPenalty: 13,
 	}
 	return &res, nil
 }
